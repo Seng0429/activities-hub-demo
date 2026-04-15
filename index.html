@@ -1,0 +1,505 @@
+
+<style>
+  :root {
+    /* Colors */
+    --color-background-primary: #ffffff;
+    --color-background-secondary: #f8f9fa;
+    --color-background-tertiary: #f0f2f5;
+    --color-text-primary: #1c1e21;
+    --color-text-secondary: #65676b;
+    --color-text-tertiary: #8a8d91;
+    --color-border-secondary: #dbdbdb;
+    --color-border-tertiary: #ebedf0;
+    
+    /* Typography & Spacing */
+    --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+    --border-radius-md: 8px;
+    --border-radius-lg: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font-sans, system-ui, sans-serif); background: var(--color-background-tertiary); }
+  .hub-wrap { max-width: 480px; margin: 0 auto; padding: 0 0 40px; }
+
+  .top-bar { background: var(--color-background-primary); border-bottom: 0.5px solid var(--color-border-tertiary); padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+  .top-bar-logo { font-size: 17px; font-weight: 500; color: var(--color-text-primary); display: flex; align-items: center; gap: 6px; }
+  .logo-dot { width: 10px; height: 10px; border-radius: 50%; background: #E31837; display: inline-block; }
+
+  .stories-row { display: flex; gap: 12px; padding: 12px 16px; overflow-x: auto; background: var(--color-background-primary); border-bottom: 0.5px solid var(--color-border-tertiary); scrollbar-width: none; }
+  .stories-row::-webkit-scrollbar { display: none; }
+  .story-item { display: flex; flex-direction: column; align-items: center; gap: 5px; flex-shrink: 0; cursor: pointer; }
+  .story-ring { width: 58px; height: 58px; border-radius: 50%; padding: 2.5px; background: linear-gradient(135deg, #E31837 0%, #FF6B35 100%); }
+  .story-ring.gold { background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); }
+  .story-ring.teal { background: linear-gradient(135deg, #00B4A0 0%, #0077A0 100%); }
+  .story-ring.purple { background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%); }
+  .story-avatar { width: 100%; height: 100%; border-radius: 50%; border: 2.5px solid var(--color-background-primary); display: flex; align-items: center; justify-content: center; font-size: 22px; background: var(--color-background-secondary); }
+  .story-name { font-size: 10px; color: var(--color-text-secondary); text-align: center; max-width: 60px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  .post-card { background: var(--color-background-primary); border-bottom: 0.5px solid var(--color-border-tertiary); margin-bottom: 8px; }
+  .post-header { display: flex; align-items: center; padding: 10px 14px; gap: 10px; }
+  .avatar-wrap { position: relative; flex-shrink: 0; }
+  .avatar-frame { width: 42px; height: 42px; border-radius: 50%; padding: 2px; }
+  .avatar-frame.bronze { background: linear-gradient(135deg, #CD7F32, #A0522D); }
+  .avatar-frame.silver { background: linear-gradient(135deg, #C0C0C0, #808080); }
+  .avatar-frame.gold { background: linear-gradient(135deg, #FFD700, #FFA500); }
+  .avatar-frame.teal { background: linear-gradient(135deg, #00B4A0, #006080); }
+  .avatar-frame.holo { background: linear-gradient(135deg, #8B5CF6, #06B6D4, #10B981); }
+  .avatar-inner { width: 100%; height: 100%; border-radius: 50%; background: var(--color-background-secondary); border: 2px solid var(--color-background-primary); display: flex; align-items: center; justify-content: center; font-size: 20px; }
+  .post-meta { flex: 1; min-width: 0; }
+  .post-name-row { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+  .post-username { font-size: 13px; font-weight: 500; color: var(--color-text-primary); }
+  .role-badge { font-size: 9px; font-weight: 500; padding: 1.5px 6px; border-radius: 20px; white-space: nowrap; }
+  .badge-silver { background: #E8E8E8; color: #555; }
+  .badge-gold { background: #FFF3C2; color: #8B6000; }
+  .badge-pioneer { background: #E0F2FE; color: #0369A1; }
+  .badge-expert { background: #CCFBF1; color: #0F6E56; }
+  .badge-ai { background: #F3E8FF; color: #7C3AED; }
+  .post-location { font-size: 11px; color: var(--color-text-secondary); margin-top: 1px; }
+  .more-btn { background: none; border: none; cursor: pointer; color: var(--color-text-secondary); font-size: 18px; padding: 4px; flex-shrink: 0; }
+
+  .post-body { position: relative; }
+  .post-image-wrap { width: 100%; aspect-ratio: 4/5; position: relative; overflow: hidden; background: var(--color-background-secondary); }
+  .post-image-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .aurora-border { position: absolute; inset: 0; pointer-events: none; }
+  .aurora-border::before { content: ''; position: absolute; inset: 0; border: 3px solid transparent; border-image: linear-gradient(135deg, rgba(227,24,55,0.6), rgba(255,165,0,0.4), rgba(0,180,160,0.6)) 1; }
+  .vitality-overlay { position: absolute; bottom: 12px; left: 12px; background: rgba(0,0,0,0.58); border-radius: 20px; padding: 4px 10px; display: flex; align-items: center; gap: 6px; }
+  .vitality-stat { font-size: 11px; font-weight: 500; color: #fff; }
+  .vitality-sep { color: rgba(255,255,255,0.4); font-size: 10px; }
+  .ai-badge-overlay { position: absolute; top: 10px; right: 10px; background: rgba(124,58,237,0.85); border-radius: 20px; padding: 3px 8px; font-size: 10px; color: #fff; font-weight: 500; }
+
+  .post-title-row { padding: 10px 14px 4px; }
+  .post-title { font-size: 14px; font-weight: 500; color: var(--color-text-primary); }
+  .post-caption { font-size: 13px; color: var(--color-text-secondary); padding: 2px 14px 8px; line-height: 1.5; }
+
+  .post-footer { padding: 4px 14px 8px; border-top: 0.5px solid var(--color-border-tertiary); }
+  .engagement-row { display: flex; align-items: center; gap: 14px; padding: 8px 0 4px; }
+  .eng-btn { background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 5px; color: var(--color-text-secondary); font-size: 13px; padding: 4px 0; transition: color 0.15s; }
+  .eng-btn:hover { color: var(--color-text-primary); }
+  .eng-btn.active { color: #E31837; }
+  .eng-icon { font-size: 16px; }
+  .eng-btn.disabled { opacity: 0.4; cursor: default; position: relative; }
+  .share-btn { margin-left: auto; }
+  .cheer-text { font-size: 12px; color: var(--color-text-secondary); padding: 0 0 4px; }
+  .post-time { font-size: 10px; color: var(--color-text-tertiary); padding: 2px 0 0; display: flex; align-items: center; gap: 6px; }
+  .verified-tag { background: #E0F2FE; color: #0369A1; font-size: 9px; padding: 1px 5px; border-radius: 8px; }
+
+  .comments-section { border-top: 0.5px solid var(--color-border-tertiary); padding: 8px 14px 12px; }
+  .comment-item { display: flex; gap: 8px; margin-bottom: 10px; }
+  .comment-avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--color-background-secondary); display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+  .comment-bubble { flex: 1; }
+  .comment-name { font-size: 12px; font-weight: 500; color: var(--color-text-primary); }
+  .comment-badge { font-size: 9px; }
+  .comment-text { font-size: 12px; color: var(--color-text-secondary); margin-top: 1px; line-height: 1.5; }
+  .comment-ai { background: #F3E8FF; border-radius: 8px; padding: 6px 10px; border-left: 2.5px solid #8B5CF6; }
+  .comment-expert { background: #ECFDF5; border-radius: 8px; padding: 6px 10px; border-left: 2.5px solid #059669; }
+
+  .tooltip-wrap { position: relative; display: inline-flex; }
+  .tooltip { position: absolute; bottom: 130%; left: 50%; transform: translateX(-50%); background: var(--color-background-primary); border: 0.5px solid var(--color-border-secondary); color: var(--color-text-secondary); font-size: 10px; padding: 4px 8px; border-radius: 6px; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.15s; z-index: 50; }
+  .tooltip-wrap:hover .tooltip { opacity: 1; }
+
+  .fab { position: fixed; bottom: 24px; right: calc(50% - 240px + 16px); width: 50px; height: 50px; border-radius: 50%; background: #E31837; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 22px; color: #fff; box-shadow: 0 2px 8px rgba(227,24,55,0.35); z-index: 200; }
+
+  .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 300; display: flex; align-items: flex-end; justify-content: center; }
+  .modal-sheet { background: var(--color-background-primary); border-radius: 20px 20px 0 0; padding: 20px 20px 32px; width: 100%; max-width: 480px; }
+  .modal-handle { width: 36px; height: 4px; border-radius: 2px; background: var(--color-border-secondary); margin: 0 auto 16px; }
+  .modal-title { font-size: 16px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 16px; }
+  .step-indicator { display: flex; gap: 6px; margin-bottom: 20px; }
+  .step-dot { height: 3px; flex: 1; border-radius: 2px; background: var(--color-border-tertiary); transition: background 0.2s; }
+  .step-dot.active { background: #E31837; }
+  .step-dot.done { background: #059669; }
+  .upload-zone { border: 1.5px dashed var(--color-border-secondary); border-radius: var(--border-radius-lg); padding: 32px 16px; text-align: center; color: var(--color-text-secondary); font-size: 13px; cursor: pointer; background: var(--color-background-secondary); margin-bottom: 14px; }
+  .upload-icon { font-size: 28px; margin-bottom: 8px; }
+  .type-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 14px; }
+  .type-btn { border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); padding: 10px; font-size: 13px; background: var(--color-background-primary); cursor: pointer; color: var(--color-text-primary); display: flex; align-items: center; gap: 8px; transition: border-color 0.15s, background 0.15s; }
+  .type-btn.selected { border-color: #E31837; background: #FEF2F4; color: #E31837; }
+  .modal-input { width: 100%; padding: 9px 12px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); font-size: 13px; background: var(--color-background-primary); color: var(--color-text-primary); margin-bottom: 10px; font-family: inherit; }
+  .modal-input:focus { outline: none; border-color: #E31837; }
+  .loc-btn { border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); padding: 10px 14px; font-size: 13px; background: var(--color-background-primary); cursor: pointer; color: var(--color-text-primary); display: flex; align-items: center; gap: 8px; margin-bottom: 8px; width: 100%; transition: border-color 0.15s; }
+  .loc-btn.selected { border-color: #E31837; background: #FEF2F4; }
+  .privacy-banner { background: #F3E8FF; border-radius: var(--border-radius-md); padding: 10px 12px; font-size: 12px; color: #6D28D9; display: flex; gap: 8px; align-items: flex-start; margin-bottom: 14px; }
+  .green-check { background: #ECFDF5; border-radius: var(--border-radius-md); padding: 12px; font-size: 13px; color: #065F46; display: flex; gap: 10px; align-items: center; margin-bottom: 14px; }
+  .modal-btn { width: 100%; padding: 12px; border-radius: var(--border-radius-md); font-size: 14px; font-weight: 500; border: none; cursor: pointer; }
+  .modal-btn.primary { background: #E31837; color: #fff; }
+  .modal-btn.secondary { background: var(--color-background-secondary); color: var(--color-text-primary); border: 0.5px solid var(--color-border-secondary); margin-bottom: 8px; }
+  .modal-btn-row { display: flex; gap: 8px; }
+  .modal-btn-row .modal-btn { flex: 1; }
+
+  .verifying-text {
+    font-size: 12px;
+    color: #6D28D9;
+    font-weight: 500;
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    animation: pulse 1.5s infinite;
+  }
+
+  @keyframes pulse {
+    0% { opacity: 0.6; }
+    50% { opacity: 1; }
+    100% { opacity: 0.6; }
+  }
+
+  .modal-btn.loading {
+    opacity: 0.7;
+    cursor: wait;
+    background: #9ca3af !important;
+  }
+</style>
+
+<div class="hub-wrap" id="hubWrap">
+  <div class="top-bar">
+    <div class="top-bar-logo"><span class="logo-dot"></span>Vitality Hub</div>
+  </div>
+
+  <div class="stories-row" id="storiesRow"></div>
+  <div id="feedContainer"></div>
+</div>
+
+<button class="fab" id="postFab" title="Create post">+</button>
+<div id="modalRoot"></div>
+
+<script>
+const POSTS = [
+  {
+    id:1, role:'member', avatar:'🐼', frame:'silver', username:'@ActivePanda88', badge:'Vitality Silver', badgeClass:'badge-silver',
+    location:'📍 TRX City Park', type:'Exercise',
+    title:'5km Sunset Run', caption:'Beat my personal best today! The evening breeze at TRX was perfect. Every step counts towards a healthier me. 💪',
+    img:'https://images.unsplash.com/photo-1571008887538-b36bb32f4571?w=800&q=80',
+    stats:{a:'5.2 km', b:'+150 Pts'}, cheers:24, time:'2h ago', verified:true,
+    comments:[
+      {avatar:'🤖', name:'AIA Health Guard', badge:'AI Agent', badgeClass:'badge-ai', text:"Privacy Guard: I've blurred some sensitive details for you! Your post is now safe to share.", isAI:true},
+    ]
+  },
+  {
+    id:2, role:'expert', avatar:'🦉', frame:'teal', username:'Dr. Sarah, RD', badge:'Expert Consultant', badgeClass:'badge-expert',
+    location:'📍 KLCC Wellness Hub', type:'Food',
+    title:'High-Protein Meal Prep Bowl', caption:'Sharing my go-to post-workout recovery bowl: quinoa base, grilled salmon, avocado, edamame & sesame dressing. This combo provides ~45g protein + healthy omega-3s to repair muscle tissue after intense sessions.',
+    img:'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&q=80',
+    stats:{a:'485 kcal', b:'+200 Pts'}, cheers:61, time:'4h ago', verified:true,
+    comments:[
+      {avatar:'🤖', name:'AIA Health Guard', badge:'AI Agent', badgeClass:'badge-ai', text:"Privacy Guard: I've blurred some sensitive details for you! Your post is now safe to share.", isAI:true},
+      {avatar:'🦉', name:'Dr. Sarah, RD', badge:'Expert', badgeClass:'badge-expert', text:'Pro tip: Add a pinch of turmeric to the dressing — its anti-inflammatory curcumin compounds work synergistically with the omega-3s from salmon for enhanced recovery.', isExpert:true},
+    ]
+  },
+  {
+    id:3, role:'advisor', avatar:'🦅', frame:'gold', username:'Marcus Lim (AIA Agent)', badge:'AIA Advisor', badgeClass:'badge-gold',
+    location:'📍 1Utama Partner Gym', type:'Event',
+    title:'AIA Marathon KL 2025 — Early Bird Open!', caption:'Excited to share that AIA Vitality is sponsoring the upcoming KL Marathon! Register via the Vitality app before 31 July and earn 500 bonus points + exclusive finisher medal. See you at the start line! 🏅',
+    img:'https://images.unsplash.com/photo-1452626038306-9aae5e071dd3?w=800&q=80',
+    stats:{a:'42.2 km', b:'+500 Pts'}, cheers:89, time:'6h ago', verified:true,
+    comments:[
+      {avatar:'🤖', name:'AIA Health Guard', badge:'AI Agent', badgeClass:'badge-ai', text:"Privacy Guard: I've blurred some sensitive details for you! Your post is now safe to share.", isAI:true},
+      {avatar:'🦅', name:'Marcus Lim', badge:'AIA Advisor', badgeClass:'badge-gold', text:'Limited slots available! DM me for your personalised training plan ahead of the race. As your AIA advisor, I can also review your coverage before the event.', isExpert:true},
+    ]
+  },
+  {
+    id:4, role:'staff', avatar:'🦊', frame:'silver', username:'Kelvin – IT Dept', badge:'Pioneer Staff', badgeClass:'badge-pioneer',
+    location:'🏠 Private Studio', type:'Health',
+    title:'Morning Mindfulness & Stretch', caption:'Starting the week with 20 min deep stretch + box breathing. Mental health is Vitality too. AIA Wellness Wednesday check-in ✅',
+    img:'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&q=80',
+    stats:{a:'20 min', b:'+80 Pts'}, cheers:33, time:'8h ago', verified:true,
+    comments:[
+      {avatar:'🤖', name:'AIA Health Guard', badge:'AI Agent', badgeClass:'badge-ai', text:"Privacy Guard: I've blurred some sensitive details for you! Your post is now safe to share.", isAI:true},
+    ]
+  },
+  {
+    id:5, role:'member', avatar:'🐻', frame:'bronze', username:'@SproutBear22', badge:'Vitality Bronze', badgeClass:'badge-silver',
+    location:'📍 Bukit Aman Trail', type:'Exercise',
+    title:'Morning Cardio — Hill Intervals', caption:'3 rounds of hill repeats before sunrise. Heart pumping, lungs burning in the best way. Tracked on Garmin.',
+    img:'https://images.unsplash.com/photo-1530549387789-4c1017266635?w=800&q=80',
+    stats:{a:'148 BPM', b:'+120 Pts'}, cheers:17, time:'10h ago', verified:true,
+    comments:[
+      {avatar:'🤖', name:'AIA Health Guard', badge:'AI Agent', badgeClass:'badge-ai', text:"Privacy Guard: I've blurred some sensitive details for you! Your post is now safe to share.", isAI:true},
+      {avatar:'🦉', name:'Dr. Sarah, RD', badge:'Expert', badgeClass:'badge-expert', text:'Great effort on the hill intervals! Remember to rehydrate with electrolytes within 30 minutes post-session. Coconut water + a banana works perfectly in our tropical climate.', isExpert:true},
+    ]
+  },
+  {
+    id:6, role:'ai', avatar:'🤖', frame:'holo', username:'AIA Health Guard', badge:'AI Health Agent', badgeClass:'badge-ai',
+    location:'🔒 System Broadcast', type:'Health',
+    title:'Weekly Vitality Insight #22', caption:'Community stats: Average steps this week: 9,240 ↑12%. Top activity: Morning walks. Trending recipe: Overnight oats. Keep going, Vitality Family! Your health data stays private and protected.',
+    img:'https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?w=800&q=80',
+    stats:{a:'9,240 steps avg', b:'+Community'}, cheers:104, time:'12h ago', verified:true,
+    comments:[]
+  }
+];
+
+const STORIES = [
+  {avatar:'🐼', ring:'', name:'@ActivePanda'},
+  {avatar:'🦅', ring:'gold', name:'Marcus L.'},
+  {avatar:'🦊', ring:'', name:'Kelvin-IT'},
+  {avatar:'🦉', ring:'teal', name:'Dr. Sarah'},
+  {avatar:'🤖', ring:'purple', name:'HealthGuard'},
+  {avatar:'🐻', ring:'', name:'@SproutBear'},
+];
+
+const likedPosts = new Set();
+
+function renderStories() {
+  const row = document.getElementById('storiesRow');
+  row.innerHTML = STORIES.map(s => `
+    <div class="story-item">
+      <div class="story-ring ${s.ring}">
+        <div class="story-avatar">${s.avatar}</div>
+      </div>
+      <span class="story-name">${s.name}</span>
+    </div>
+  `).join('');
+}
+
+function renderPosts() {
+  const feed = document.getElementById('feedContainer');
+  feed.innerHTML = POSTS.map(p => renderPost(p)).join('');
+  attachEngagement();
+}
+
+function renderPost(p) {
+  const isLiked = likedPosts.has(p.id);
+  const canComment = (p.role === 'expert' || p.role === 'advisor' || p.role === 'staff' || p.role === 'ai');
+
+  const comments = p.comments.map(c => `
+    <div class="comment-item">
+      <div class="comment-avatar">${c.avatar}</div>
+      <div class="comment-bubble">
+        <div class="comment-name">${c.name} <span class="role-badge ${c.badgeClass}" style="font-size:9px;">${c.badge}</span></div>
+        <div class="comment-text ${c.isAI ? 'comment-ai' : c.isExpert ? 'comment-expert' : ''}">${c.text}</div>
+      </div>
+    </div>
+  `).join('');
+
+  const typeColor = {Health:'#0369A1',Exercise:'#E31837',Food:'#059669',Event:'#D97706'}[p.type] || '#555';
+  const typeBg = {Health:'#E0F2FE',Exercise:'#FEF2F4',Food:'#ECFDF5',Event:'#FFFBEB'}[p.type] || '#eee';
+    
+  const statIcon = {
+    Exercise: '🏃',
+    Food: '🥗',
+    Health: '🧘',
+    Event: '🏅'
+  }[p.type] || '✨';
+
+  return `
+    <div class="post-card" data-id="${p.id}">
+      <div class="post-header">
+        <div class="avatar-wrap">
+          <div class="avatar-frame ${p.frame}">
+            <div class="avatar-inner">${p.avatar}</div>
+          </div>
+        </div>
+        <div class="post-meta">
+          <div class="post-name-row">
+            <span class="post-username">${p.username}</span>
+            <span class="role-badge ${p.badgeClass}">${p.badge}</span>
+            <span style="font-size:10px;padding:1.5px 6px;border-radius:20px;background:${typeBg};color:${typeColor};font-weight:500;">${p.type}</span>
+          </div>
+          <div class="post-location">${p.location}</div>
+        </div>
+        <button class="more-btn">⋯</button>
+      </div>
+
+      <div class="post-body">
+        <div class="post-image-wrap">
+          <img src="${p.img}" alt="${p.title}" loading="lazy" />
+          <div class="aurora-border"></div>S
+          <div class="vitality-overlay">
+            <span class="vitality-stat">${p.stats.a}</span>
+            <span class="vitality-sep">|</span>
+            <span class="vitality-stat">${p.stats.b}</span>
+          </div>
+          ${p.verified ? '<div class="ai-badge-overlay">AI Verified</div>' : ''}
+        </div>
+      </div>
+
+      <div class="post-title-row"><span class="post-title">${p.title}</span></div>
+      <div class="post-caption">${p.caption}</div>
+
+      <div class="post-footer">
+        <div class="engagement-row">
+          <button class="eng-btn like-btn ${isLiked ? 'active' : ''}" data-id="${p.id}">
+            <span class="eng-icon">&#9889;</span>
+            <span class="like-label">${isLiked ? 'Energised' : 'Energy'}</span>
+          </button>
+          ${canComment
+            ? `<button class="eng-btn"><span class="eng-icon">&#128172;</span><span>Comment</span></button>`
+            : `<div class="tooltip-wrap"><button class="eng-btn disabled"><span class="eng-icon">&#128172;</span><span>Comment</span></button><div class="tooltip">Only Experts &amp; Advisors can comment</div></div>`
+          }
+          <button class="eng-btn share-btn"><span class="eng-icon">&#8599;</span><span>Share</span></button>
+        </div>
+        <div class="cheer-text" id="cheers-${p.id}">${p.cheers + (isLiked ? 1 : 0)} peers gave Energy</div>
+        <div class="post-time">${p.time} ${p.verified ? '<span class="verified-tag">AI Verified</span>' : ''}</div>
+      </div>
+
+      ${comments ? `<div class="comments-section">${comments}</div>` : ''}
+    </div>
+  `;
+}
+
+function attachEngagement() {
+  document.querySelectorAll('.like-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = parseInt(btn.dataset.id);
+      const post = POSTS.find(p => p.id === id);
+      if (likedPosts.has(id)) {
+        likedPosts.delete(id);
+        btn.classList.remove('active');
+        btn.querySelector('.like-label').textContent = 'Energy';
+      } else {
+        likedPosts.add(id);
+        btn.classList.add('active');
+        btn.querySelector('.like-label').textContent = 'Energised';
+      }
+      const cheer = document.getElementById('cheers-' + id);
+      if (cheer) cheer.textContent = (post.cheers + (likedPosts.has(id) ? 1 : 0)) + ' peers gave Energy';
+    });
+  });
+}
+
+let modalStep = 1;
+let selectedType = '';
+let selectedLoc = '';
+
+function openModal() {
+  modalStep = 1; selectedType = ''; selectedLoc = '';
+  renderModal();
+}
+
+function renderModal() {
+  const root = document.getElementById('modalRoot');
+  const steps = ['','','','',''];
+  const dots = steps.map((_,i) => `<div class="step-dot ${i+1 < modalStep ? 'done' : i+1 === modalStep ? 'active' : ''}"></div>`).join('');
+
+  let inner = '';
+  if (modalStep === 1) {
+    inner = `
+      <div class="modal-title">Select or capture content</div>
+      <div class="step-indicator">${dots}</div>
+      <div class="upload-zone" onclick="nextStep()">
+        <div class="upload-icon">📷</div>
+        <div>Tap to upload a workout screenshot or photo</div>
+        <div style="font-size:11px;margin-top:4px;color:var(--color-text-tertiary)">Supports Apple Health, Garmin, or any image</div>
+      </div>
+      <div class="modal-btn-row">
+        <button class="modal-btn secondary" onclick="closeModal()">Cancel</button>
+        <button class="modal-btn primary" onclick="nextStep()">Next →</button>
+      </div>`;
+  } else if (modalStep === 2) {
+    inner = `
+      <div class="modal-title">AI privacy scrub</div>
+      <div class="step-indicator">${dots}</div>
+      <div class="privacy-banner">
+        <span style="font-size:16px;">🤖</span>
+        <div><strong>AIA Health Guard is scanning…</strong><br>Checking for faces, licence plates, house numbers & sensitive info. Any detected items will be blurred automatically before publishing.</div>
+      </div>
+      <div style="background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:14px;font-size:13px;color:var(--color-text-secondary);margin-bottom:14px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;"><span>✅</span> No faces detected</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;"><span>✅</span> No vehicle plates detected</div>
+        <div style="display:flex;align-items:center;gap:8px;"><span>⚠️</span> 1 house number blurred</div>
+      </div>
+      <div class="modal-btn-row">
+        <button class="modal-btn secondary" onclick="prevStep()">← Back</button>
+        <button class="modal-btn primary" onclick="nextStep()">Next →</button>
+      </div>`;
+  } else if (modalStep === 3) {
+    const types = [['🏃 Exercise','Exercise'],['🥗 Food','Food'],['❤️ Health','Health'],['🏅 Event','Event']];
+    inner = `
+      <div class="modal-title">Define the activity</div>
+      <div class="step-indicator">${dots}</div>
+      <div class="type-grid">
+        ${types.map(([label, val]) => `<button class="type-btn ${selectedType===val?'selected':''}" onclick="selectType('${val}')">${label}</button>`).join('')}
+      </div>
+      <input class="modal-input" placeholder="Title (e.g. Morning Cardio)" id="postTitle" />
+      <textarea class="modal-input" rows="3" placeholder="Caption (optional)" id="postCaption" style="resize:none;"></textarea>
+      <div class="modal-btn-row">
+        <button class="modal-btn secondary" onclick="prevStep()">← Back</button>
+        <button class="modal-btn primary" onclick="nextStep()">Next →</button>
+      </div>`;
+  } else if (modalStep === 4) {
+    inner = `
+      <div class="modal-title">Set privacy location</div>
+      <div class="step-indicator">${dots}</div>
+      <button class="loc-btn ${selectedLoc==='public'?'selected':''}" onclick="selectLoc('public')">
+        <span>📍</span><div><div style="font-size:13px;font-weight:500;">Verified Public Spot</div><div style="font-size:11px;color:var(--color-text-secondary);">TRX Park, KLCC, Partner Gym — appears on map</div></div>
+      </button>
+      <button class="loc-btn ${selectedLoc==='private'?'selected':''}" onclick="selectLoc('private')">
+        <span>🏠</span><div><div style="font-size:13px;font-weight:500;">Private Space</div><div style="font-size:11px;color:var(--color-text-secondary);">Home / Condo — feed only, hidden from map</div></div>
+      </button>
+      <div class="modal-btn-row" style="margin-top:12px;">
+        <button class="modal-btn secondary" onclick="prevStep()">← Back</button>
+        <button class="modal-btn primary" onclick="nextStep()">Next →</button>
+      </div>`;
+  } else if (modalStep === 5) {
+    inner = `
+      <div class="modal-title">Verification & publish</div>
+      <div class="step-indicator">${dots}</div>
+      <div class="green-check">
+        <span style="font-size:22px;">✅</span>
+        <div>
+          <div style="font-weight:500;font-size:13px;">Ready for Hub</div>
+          <div style="font-size:12px;color:#047857;margin-top:2px;">Local privacy scrub complete</div>
+        </div>
+      </div>
+      <div style="background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px;font-size:12px;color:var(--color-text-secondary);margin-bottom:14px;">
+        <div>Type: <strong>${selectedType || 'Exercise'}</strong></div>
+        <div>Location: <strong>${selectedLoc === 'private' ? '🏠 Private Space' : '📍 Public Spot'}</strong></div>
+        <div class="verifying-text" id="finalCheckText">
+          <span>🛡️</span> Final AI Privacy Check in progress...
+        </div>
+      </div>
+      <div class="modal-btn-row">
+        <button class="modal-btn secondary" id="modalBackBtn" onclick="prevStep()">← Back</button>
+        <button class="modal-btn primary" id="publishBtn" onclick="publishPost()">Confirm & Post</button>
+      </div>
+      <div style="text-align:center; font-size:10px; color:var(--color-text-tertiary); margin-top:12px;">
+        By posting, you agree to the Vitality Community Guidelines.
+      </div>`;
+  }
+
+  root.innerHTML = `
+    <div class="modal-bg" onclick="handleBgClick(event)">
+      <div class="modal-sheet">
+        <div class="modal-handle"></div>
+        ${inner}
+      </div>
+    </div>`;
+}
+
+window.nextStep = () => { modalStep = Math.min(5, modalStep + 1); renderModal(); };
+window.prevStep = () => { modalStep = Math.max(1, modalStep - 1); renderModal(); };
+window.closeModal = () => { document.getElementById('modalRoot').innerHTML = ''; };
+window.handleBgClick = (e) => { if (e.target.classList.contains('modal-bg')) closeModal(); };
+window.selectType = (v) => { selectedType = v; renderModal(); };
+window.selectLoc = (v) => { selectedLoc = v; renderModal(); };
+window.publishPost = () => {
+  const btn = document.getElementById('publishBtn');
+  const backBtn = document.getElementById('modalBackBtn');
+  const checkText = document.getElementById('finalCheckText');
+  
+  // UI State: Loading
+  btn.disabled = true;
+  btn.classList.add('loading');
+  btn.textContent = 'Verifying...';
+  backBtn.style.display = 'none';
+  checkText.innerHTML = '<span>🔒</span> Encrypting & Validating...';
+
+  // Simulate a 1.5s backend "Safe Guard" check
+  setTimeout(() => {
+    closeModal();
+    const banner = document.createElement('div');
+    banner.style.cssText = 'position:fixed;top:64px;left:50%;transform:translateX(-50%);background:#059669;color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;z-index:400;font-weight:500;box-shadow:0 4px 12px rgba(0,0,0,0.15);border: 1px solid rgba(255,255,255,0.2);';
+    banner.innerHTML = '🛡️ Post Verified & Shared to Hub!';
+    document.body.appendChild(banner);
+    
+    // Add the new post to the top of the feed (Optional UI polish)
+    // renderPosts(); 
+    
+    setTimeout(() => {
+      banner.style.opacity = '0';
+      banner.style.transition = 'opacity 0.5s';
+      setTimeout(() => banner.remove(), 500);
+    }, 3000);
+  }, 1500);
+};
+
+document.getElementById('postFab').addEventListener('click', openModal);
+renderStories();
+renderPosts();
+</script>
